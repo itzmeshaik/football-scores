@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Football Score Fetcher</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 400px; text-align: center; }
+        h1 { color: #004d40; }
+        input { width: 80%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; }
+        button { width: 100%; padding: 10px; background: #004d40; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #003630; }
+        #results { margin-top: 20px; text-align: left; }
+        .score-card { background: #e0e0e0; padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 5px solid #004d40; }
+        .winner { color: #d32f2f; font-weight: bold; }
+        .date { font-size: 0.8em; color: #666; }
+        .error-msg { color: red; font-size: 0.9em; margin-top: 10px;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⚽ Live Scores</h1>
+    <p>Type a team name:</p>
+    <input type="text" id="teamInput" placeholder="e.g. Man City or Barcelona">
+    <button onclick="fetchScores()">Get Scores</button>
+    
+    <div id="results"></div>
+</div>
+
+<script>
+    async function fetchScores() {
+        const team = document.getElementById('teamInput').value;
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '<p>Loading...</p>';
+
+        try {
+            // Call our local server
+            const response = await fetch(`/api/scores?team=${encodeURIComponent(team)}`);
+            const data = await response.json();
+
+            if (data.error) {
+                resultsDiv.innerHTML = `<p class="error-msg">${data.error}</p>`;
+            } else {
+                resultsDiv.innerHTML = ''; // Clear loading message
+                
+                if (data.scores.length === 0) {
+                    resultsDiv.innerHTML = `<p>No games scheduled for ${data.team} this week.</p>`;
+                } else {
+                    data.scores.forEach(game => {
+                        const date = new Date(game.date).toLocaleDateString();
+                        const home = game.home;
+                        const away = game.away;
+                        const homeScore = game.goals_home;
+                        const awayScore = game.goals_away;
+                        
+                        // Check if it's today (rough check)
+                        const isToday = game.date.split('T')[0] === new Date().toISOString().split('T')[0];
+
+                        resultsDiv.innerHTML += `
+                            <div class="score-card ${isToday ? 'active' : ''}">
+                                <div class="date">${date}</div>
+                                <div>
+                                    <span style="font-weight:bold">${home.name}</span> 
+                                    <span style="margin:0 10px; font-weight:bold">${homeScore}-${awayScore}</span> 
+                                    <span style="font-weight:bold">${away.name}</span>
+                                </div>
+                                ${homeScore > awayScore ? `<div class="winner">Winner: ${home.name}</div>` : ''}
+                            </div>
+                        `;
+                    });
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            resultsDiv.innerHTML = '<p class="error-msg">Network Error. Check Console.</p>';
+        }
+    }
+</script>
+
+</body>
+</html>
+
