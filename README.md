@@ -1,3 +1,3 @@
-### ⚠️THIS WAS NOT MADE BY ME. I MADE THIS USING THE QWEN 3.5 MODEL TO TEST OLLAMA.
+### ⚠️Football scores written by Qwen 3.5 model.
 This is a simple website that fetches soccer scores.
-FLAW: Type in the exact name. eg. "Real Madrid" (yes, with capital letters) or "Barcelona"
+Type in the exact name. eg. "Real Madrid" (yes, with capital letters) or "Barcelona"
